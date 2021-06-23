@@ -1,0 +1,7 @@
+The goal of this exercise is to set up a fresh K8S cluster on Google's cloud infrastructre,
+deploy a simple app to it and expose that app to the internet.
+
+The application is a NodeJS application which can be found here: https://gitlab.com/fatliverfreddy/echo.
+A built and ready to go containerized version of this app is available DockerHub under the name `avitaltamirdeveleap/echo`.
+
+Create a new K8S cluster in Google, then write YAML files for an 'echo' deployment and a LoadBalancer service, and apply them to your cluster.

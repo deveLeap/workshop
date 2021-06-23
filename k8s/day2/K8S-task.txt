@@ -1,0 +1,54 @@
+
+
+# Persistentcy:
+1. Create a PersistentVolumeClaim .yaml manifest which requests the following specifications:
+  (a) use dynamic as its storageClassName.
+  (b) 1Gi of storage capacity.
+  (c) access mode of ReadWriteOnce.
+2. Create the resource by using `kubectl apply -f <filename>`
+3. Make sure that the PVC is successfully bound to a PV by using `kubectl get pvc`.
+   You can see the PV that was dynamically provisioned and bound to PVC by using `kubectl get pv`
+3. Create a Pod .yaml manifest file which has the following specifications:
+   (a) Pod name is going to be `nginx`
+   (b) Pod is going to have 1 container that uses `nginx:latest` image
+   (c) Pod is going to mount the PVC you have made in step 1 of this task, mountPath is going to be "/app"
+   Create the pod by using `kubectl apply -f <filename>`, make sure it is running.
+   Exec inside the pod using `kubectl exec <pod-name> -it -- bash` and make sure that there is a PV mounted to "/app".
+
+---
+
+# Configuration:
+Create 4 Kubernetes .yaml manifests:
+1. secret.yaml - the secret is going to be named `mysql-creds` and is going to store the following keys:
+   (a) MYSQL_USER - "myuser"
+   (b) MYSQL_PASSWORD - "StrongPassword"
+   *** Remember that the values must be base64 encoded!
+2. configmap.yaml - the configmap is going to be named `mysql-config` and is going to have the following key-values:
+   (a) MYSQL_DATABASE - "myDB"
+   (b) MYSQL_ALLOW_EMPTY_PASSWORD: "no"
+   (c) MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+3. init-configmap.yaml - another configmap named `mysql-init` which is going to be mounted as a file and have the following key and value:
+   (a) init.sql: |
+         CREATE TABLE `users` (name varchar(32) NOT NULL, lastname varchar(32) NOT NULL );
+         INSERT INTO `users` (`name`, `lastname`) VALUES ('YOUR_NAME', 'YOUR_LASTNAME');
+4. pod.yaml - a Pod which is named `mysql`, has 1 container named `mysql` which uses 'mysql:5.6' image,
+              use the `mysql-creds` secret and `mysql-config` configmap as Environment Variables with 'envFrom' (use documentation),
+              and the `mysql-init` configmap as a volumeMount with a mountPath of "/docker-entrypoint-initdb.d" (use documentation)
+Once you're done, apply all the resources using `kubectl apply -f <file path>`
+Use `kubectl exec mysql -it bash` to go inside the mysql Pod, test if you have the secret and configmap as environment variables and the 'init.sql' file using:
+`env | grep MYSQL_` for environment variables
+`ls -la /docker-entrypoint-initdb.d` for init.sql
+Enter the mysql client using `mysql -u $MYSQL_USER -p$MYSQL_PASSWORD`,
+after you've successfully logged in to mysql, execute `use myDB;` to switch database, and execute `SELECT * FROM users;`.
+You should see output of the table with your firstname and lastname, screenshot this line and send it over at Microsoft Teams meeting. :)
+
+---
+
+# Jobs
+Create a CronJob .yaml manifest that will:
+1. Run every minute.
+2. Contain 1 container which will run 'busybox' image.
+3. Set the container's entrypoint to ['/bin/sh', '-c'] using 'command' (use documentation)
+4. Set the container's entrypoint arguments to ['echo "Job successfully ran!"'] using 'args' (use documentation)
+Once you're done, `kubectl apply -f <file-name>` to create the resource.
+Verify that the CronJob runs every minute, prints "Job successfully ran!" and exits with status code of 0 (Pod Completed).
